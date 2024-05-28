@@ -10,8 +10,10 @@ export default function TitleComponent({ text }: TitleComponentProps) {
 
   const textColor = colorScheme === "dark" ? "white" : "black";
 
+  const backgroundColor = colorScheme === "dark" ? "black" : "white";
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: backgroundColor }]}>
       <Text style={[styles.title, { color: textColor }]}>{text}</Text>
     </View>
   );
