@@ -41,13 +41,13 @@ export default function MyChart() {
         innerRadius={100}
         data={pieData}
         colorScale={[
-          "#FCFFA6",
-          "#C1FFD7",
-          "#B5DEFF",
-          "#CAB8FF",
-          "#79B4B7",
-          "#9D9D9D",
-          "#C1AC95",
+          "#556B2F",
+          "#2C3E50",
+          "#6A5ACD",
+          "#8B5F65",
+          "#708090",
+          "#556B2F",
+          "#6B4423",
         ]}
         labelComponent={
           <VictoryLabel
@@ -97,6 +97,6 @@ const styles = StyleSheet.create({
   centerText: {
     position: "absolute",
     textAlign: "center",
-    fontSize: 20,
+    fontSize: 15,
   },
 });
