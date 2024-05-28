@@ -1,0 +1,32 @@
+[
+  {
+    "ID": 1,
+    "name": "Health",
+    "budget": "553.45",
+    "user_id": 1
+  },
+  {
+    "ID": 2,
+    "name": "Games",
+    "budget": "100.22",
+    "user_id": 1
+  },
+  {
+    "ID": 3,
+    "name": "Games",
+    "budget": "310.21",
+    "user_id": 1
+  },
+  {
+    "ID": 4,
+    "name": "Games",
+    "budget": "689.18",
+    "user_id": 2
+  },
+  {
+    "ID": 5,
+    "name": "Tools",
+    "budget": "879.48",
+    "user_id": 1
+  }
+]
