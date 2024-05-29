@@ -2,31 +2,31 @@
   {
     "ID": 1,
     "name": "Abonnements",
-    "budget": "703.88",
-    "user_id": 2
+    "budget": "100",
+    "user_id": 1
   },
   {
     "ID": 2,
     "name": "Factures",
-    "budget": "346.20",
+    "budget": "100",
     "user_id": 1
   },
   {
     "ID": 3,
     "name": "Loisirs",
-    "budget": "271.76",
+    "budget": "100",
     "user_id": 1
   },
   {
     "ID": 4,
     "name": "Sports",
-    "budget": "50.55",
-    "user_id": 2
+    "budget": "0",
+    "user_id": 1
   },
   {
     "ID": 5,
     "name": "Autres",
-    "budget": "684.25",
-    "user_id": 2
+    "budget": "0",
+    "user_id": 1
   }
 ]

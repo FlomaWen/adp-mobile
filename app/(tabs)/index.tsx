@@ -24,7 +24,7 @@ export default function HomeScreen() {
       <Animated.View
         style={[
           styles.animatedContainer,
-          { height: isListExpanded ? "75%" : "40%" },
+          { height: isListExpanded ? "75%" : "20%" },
         ]}
       >
         <SpendingsList

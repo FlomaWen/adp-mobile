@@ -5,7 +5,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   TouchableOpacity,
   useColorScheme,
   Pressable,
@@ -50,11 +49,9 @@ export default function SpendingsList({
 
   const [amount, setAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(categories[0].ID);
-  const [frequency, setFrequency] = useState("unique");
+  const [frequency, setFrequency] = useState("Unique");
 
-  const renderDropdownButtonText = (defaultValue: string) => {
-    return defaultValue;
-  };
+  const renderDropdownButtonText = (option: any) => option;
 
   return (
     <ScrollView
@@ -79,36 +76,41 @@ export default function SpendingsList({
         <View style={styles.dropdownContainer}>
           <ModalDropdown
             options={categories.map((category) => category.name)}
-            defaultValue="Catégorie"
+            defaultValue={categories[0].name}
             textStyle={{ color: labelColor, fontSize: 16 }}
-            dropdownTextStyle={{ fontSize: 16 }}
-            dropdownStyle={styles.dropdown}
-            style={[styles.dropdown, { marginTop: 10, marginLeft: 10 }]}
-            onSelect={(index: string | number, value: any) =>
+            dropdownTextStyle={{ fontSize: 16, color: "white" }}
+            dropdownStyle={[styles.dropdown, { backgroundColor: "black" }]}
+            style={styles.dropdownElement}
+            onSelect={(index: string | number) =>
               setSelectedCategory(categories[index as number]?.ID)
             }
             renderButtonText={renderDropdownButtonText}
+            defaultIndex={0}
           />
-
           <ModalDropdown
             options={["Unique", "Par jour", "Par semaine", "Par mois"]}
-            defaultValue="Fréquence"
+            defaultValue="Unique"
             textStyle={{ color: labelColor, fontSize: 16 }}
-            dropdownTextStyle={{ fontSize: 16 }}
-            dropdownStyle={styles.dropdown}
-            style={[styles.dropdown, { marginTop: 10, marginLeft: 10 }]}
-            onSelect={(_index: any, value: React.SetStateAction<string>) =>
-              setFrequency(value)
+            dropdownTextStyle={{ fontSize: 16, color: "white" }}
+            dropdownStyle={[styles.dropdown, { backgroundColor: "black" }]}
+            style={styles.dropdownElement}
+            onSelect={(index: string | number) =>
+              setFrequency(
+                ["Unique", "Par jour", "Par semaine", "Par mois"][
+                  index as number
+                ]
+              )
             }
             renderButtonText={renderDropdownButtonText}
+            defaultIndex={0}
           />
         </View>
       </View>
-
-      <Pressable style={styles.button} onPress={() => console.log("Valider")}>
-        <Text style={styles.buttontext}>{"Test"}</Text>
-      </Pressable>
-
+      <View style={styles.buttonContainer}>
+        <Pressable style={styles.button} onPress={() => console.log("Valider")}>
+          <Text style={styles.buttontext}>{"Valider"}</Text>
+        </Pressable>
+      </View>
       {spendings.map((item, index) => {
         const category = getCategoryById(item.category_id);
         return (
@@ -119,7 +121,7 @@ export default function SpendingsList({
               { backgroundColor: itemBackgroundColor },
             ]}
           >
-            <View style={styles.textContainer}>
+            <View style={{ flex: 1 }}>
               <View style={styles.nameAndPriceContainer}>
                 <Text style={[styles.spendingText, { color: labelColor }]}>
                   {item.name}
@@ -166,12 +168,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
     borderTopEndRadius: 20,
-    borderEndEndRadius: 20,
-    borderStartStartRadius: 20,
     borderBottomLeftRadius: 20,
-  },
-  textContainer: {
-    flex: 1,
   },
   nameAndPriceContainer: {
     flexDirection: "row",
@@ -197,15 +194,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  inputContainer: {
-    padding: 10,
-  },
   input: {
+    flex: 1,
     borderBottomWidth: 1,
     marginBottom: 10,
     padding: 8,
     borderColor: "#ccc",
-    fontSize: 12,
+    fontSize: 16,
   },
   categoryBadge: {
     paddingHorizontal: 10,
@@ -219,27 +214,37 @@ const styles = StyleSheet.create({
   },
   inlineContainer: {
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
     marginBottom: 20,
   },
   dropdownContainer: {
     flexDirection: "row",
-    flex: 1,
+    flex: 3,
   },
   dropdown: {
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "black",
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,
+    marginTop: 10,
+    marginLeft: 10,
+  },
+  dropdownElement: {
+    flex: 1,
+    marginLeft: 10,
+    marginTop: 10,
+  },
+  buttonContainer: {
+    alignItems: "center",
+    marginBottom: 20,
   },
   button: {
     backgroundColor: "#4CAF50",
     borderRadius: 30,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    width: 150,
+    alignItems: "center",
   },
   buttontext: {
     color: "white",
