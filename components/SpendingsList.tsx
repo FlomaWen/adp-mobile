@@ -4,15 +4,17 @@ import {
   ScrollView,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   useColorScheme,
+  Modal,
   Pressable,
 } from "react-native";
-import ModalDropdown from "react-native-modal-dropdown";
 import Icon from "react-native-vector-icons/FontAwesome";
 import spendings from "@/spendings.json";
 import categories from "@/categories.json";
+import InputsForm from "./InputsForm";
+import LoginForm from "./LoginForm";
+import { AddIcon, Button, ButtonIcon, ButtonText } from "@gluestack-ui/themed";
 
 interface SpendingsListProps {
   onListExpand: () => void;
@@ -42,16 +44,11 @@ export default function SpendingsList({
   onListExpand,
   isListExpanded,
 }: SpendingsListProps) {
+  const [modalVisible, setModalVisible] = useState(false);
   const colorScheme = useColorScheme();
   const labelColor = colorScheme === "dark" ? "white" : "black";
   const backgroundColor = colorScheme === "dark" ? "#2e2d2d" : "white";
   const itemBackgroundColor = colorScheme === "dark" ? "#1e1e1e" : "#ffffff";
-
-  const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(categories[0].ID);
-  const [frequency, setFrequency] = useState("Unique");
-
-  const renderDropdownButtonText = (option: any) => option;
 
   return (
     <ScrollView
@@ -64,53 +61,18 @@ export default function SpendingsList({
           color={labelColor}
         />
       </TouchableOpacity>
-      <View style={styles.inlineContainer}>
-        <TextInput
-          style={[styles.input, { color: labelColor }]}
-          placeholder="Montant"
-          placeholderTextColor={labelColor}
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-        />
-        <View style={styles.dropdownContainer}>
-          <ModalDropdown
-            options={categories.map((category) => category.name)}
-            defaultValue={categories[0].name}
-            textStyle={{ color: labelColor, fontSize: 16 }}
-            dropdownTextStyle={{ fontSize: 16, color: "white" }}
-            dropdownStyle={[styles.dropdown, { backgroundColor: "black" }]}
-            style={styles.dropdownElement}
-            onSelect={(index: string | number) =>
-              setSelectedCategory(categories[index as number]?.ID)
-            }
-            renderButtonText={renderDropdownButtonText}
-            defaultIndex={0}
-          />
-          <ModalDropdown
-            options={["Unique", "Par jour", "Par semaine", "Par mois"]}
-            defaultValue="Unique"
-            textStyle={{ color: labelColor, fontSize: 16 }}
-            dropdownTextStyle={{ fontSize: 16, color: "white" }}
-            dropdownStyle={[styles.dropdown, { backgroundColor: "black" }]}
-            style={styles.dropdownElement}
-            onSelect={(index: string | number) =>
-              setFrequency(
-                ["Unique", "Par jour", "Par semaine", "Par mois"][
-                  index as number
-                ]
-              )
-            }
-            renderButtonText={renderDropdownButtonText}
-            defaultIndex={0}
-          />
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <Pressable style={styles.button} onPress={() => console.log("Valider")}>
-          <Text style={styles.buttontext}>{"Valider"}</Text>
-        </Pressable>
-      </View>
+      <Button
+        style={styles.button}
+        size="xs"
+        variant="solid"
+        action="primary"
+        isDisabled={false}
+        isFocusVisible={false}
+        onPress={() => setModalVisible(true)}
+      >
+        <ButtonText>New</ButtonText>
+        <ButtonIcon as={AddIcon} />
+      </Button>
       {spendings.map((item, index) => {
         const category = getCategoryById(item.category_id);
         return (
@@ -147,6 +109,27 @@ export default function SpendingsList({
           </View>
         );
       })}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <InputsForm />
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text style={styles.textStyle}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -194,14 +177,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  input: {
-    flex: 1,
-    borderBottomWidth: 1,
-    marginBottom: 10,
-    padding: 8,
-    borderColor: "#ccc",
-    fontSize: 16,
-  },
   categoryBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -212,42 +187,37 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
   },
-  inlineContainer: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  dropdownContainer: {
-    flexDirection: "row",
-    flex: 3,
-  },
-  dropdown: {
-    backgroundColor: "black",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginTop: 10,
-    marginLeft: 10,
-  },
-  dropdownElement: {
-    flex: 1,
-    marginLeft: 10,
-    marginTop: 10,
-  },
-  buttonContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
   button: {
-    backgroundColor: "#4CAF50",
-    borderRadius: 30,
-    paddingVertical: 10,
-    width: 150,
-    alignItems: "center",
+    width: 60,
   },
-  buttontext: {
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    height: 300,
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
     color: "white",
-    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

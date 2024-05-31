@@ -1,9 +1,13 @@
-import { Tabs } from "expo-router";
+import { Stack, Tabs } from "expo-router";
 import React from "react";
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { AntDesign } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { NavigationContainer } from "@react-navigation/native";
+import SignupScreen from "./signup";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -23,6 +27,19 @@ export default function TabLayout() {
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
               color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="login"
+        options={{
+          title: "Compte",
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "account" : "account-outline"}
+              size={35}
+              color="white"
             />
           ),
         }}
