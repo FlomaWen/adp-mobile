@@ -4,6 +4,8 @@ import TitleComponent from "@/components/TitleComponent";
 import MyChart from "@/components/SpendingsChart";
 import SpendingsList from "@/components/SpendingsList";
 import { Animated } from "react-native";
+import { config } from "@gluestack-ui/config";
+import { GluestackUIProvider } from "@gluestack-ui/themed";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -16,23 +18,25 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: backgroundColor }]}
-    >
-      <TitleComponent text="HISTORIQUE" />
-      <MyChart />
-      <Animated.View
-        style={[
-          styles.animatedContainer,
-          { height: isListExpanded ? "75%" : "40%" },
-        ]}
+    <GluestackUIProvider config={config}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: backgroundColor }]}
       >
-        <SpendingsList
-          onListExpand={handleListExpansion}
-          isListExpanded={false}
-        />
-      </Animated.View>
-    </SafeAreaView>
+        <TitleComponent text="HISTORIQUE" />
+        <MyChart />
+        <Animated.View
+          style={[
+            styles.animatedContainer,
+            { height: isListExpanded ? "75%" : "20%" },
+          ]}
+        >
+          <SpendingsList
+            onListExpand={handleListExpansion}
+            isListExpanded={false}
+          />
+        </Animated.View>
+      </SafeAreaView>
+    </GluestackUIProvider>
   );
 }
 

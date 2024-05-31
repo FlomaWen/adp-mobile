@@ -1,24 +1,18 @@
-import React, { useState } from "react";
+// SpendingsList.js
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   ScrollView,
   View,
   Text,
-  TextInput,
-  Button,
   TouchableOpacity,
   useColorScheme,
-  Pressable,
+  Modal,
 } from "react-native";
-import ModalDropdown from "react-native-modal-dropdown";
 import Icon from "react-native-vector-icons/FontAwesome";
-import spendings from "@/spendings.json";
-import categories from "@/categories.json";
-
-interface SpendingsListProps {
-  onListExpand: () => void;
-  isListExpanded: boolean;
-}
+import InputsForm from "./InputsForm";
+import { AddIcon, Button, ButtonIcon, ButtonText } from "@gluestack-ui/themed";
+import { fetchCategories } from "@/app/callsAPI";
 
 const categoryColors = [
   "#556B2F",
@@ -30,31 +24,36 @@ const categoryColors = [
   "#6B4423",
 ];
 
-const categorizedColors = categories.map((category, index) => ({
-  ...category,
-  color: categoryColors[index % categoryColors.length],
-}));
-
-const getCategoryById = (id: number) => {
-  return categorizedColors.find((category) => category.ID === id);
-};
-
-export default function SpendingsList({
-  onListExpand,
-  isListExpanded,
-}: SpendingsListProps) {
+export default function SpendingsList({ onListExpand, isListExpanded }) {
+  const [categories, setCategories] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
   const colorScheme = useColorScheme();
   const labelColor = colorScheme === "dark" ? "white" : "black";
   const backgroundColor = colorScheme === "dark" ? "#2e2d2d" : "white";
   const itemBackgroundColor = colorScheme === "dark" ? "#1e1e1e" : "#ffffff";
 
-  const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(categories[0].ID);
-  const [frequency, setFrequency] = useState("unique");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const categoriesData = await fetchCategories();
+        const categorizedColors = categoriesData.map((category, index) => ({
+          ...category,
+          color: categoryColors[index % categoryColors.length],
+        }));
+        // Tri des dépenses de chaque catégorie par date
+        categorizedColors.forEach((category) => {
+          category.spendings.sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+        });
+        setCategories(categorizedColors);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des catégories:", error);
+      }
+    };
 
-  const renderDropdownButtonText = (defaultValue: string) => {
-    return defaultValue;
-  };
+    fetchData();
+  }, []);
 
   return (
     <ScrollView
@@ -67,70 +66,41 @@ export default function SpendingsList({
           color={labelColor}
         />
       </TouchableOpacity>
-      <View style={styles.inlineContainer}>
-        <TextInput
-          style={[styles.input, { color: labelColor }]}
-          placeholder="Montant"
-          placeholderTextColor={labelColor}
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-        />
-        <View style={styles.dropdownContainer}>
-          <ModalDropdown
-            options={categories.map((category) => category.name)}
-            defaultValue="Catégorie"
-            textStyle={{ color: labelColor, fontSize: 16 }}
-            dropdownTextStyle={{ fontSize: 16 }}
-            dropdownStyle={styles.dropdown}
-            style={[styles.dropdown, { marginTop: 10, marginLeft: 10 }]}
-            onSelect={(index: string | number, value: any) =>
-              setSelectedCategory(categories[index as number]?.ID)
-            }
-            renderButtonText={renderDropdownButtonText}
-          />
-
-          <ModalDropdown
-            options={["Unique", "Par jour", "Par semaine", "Par mois"]}
-            defaultValue="Fréquence"
-            textStyle={{ color: labelColor, fontSize: 16 }}
-            dropdownTextStyle={{ fontSize: 16 }}
-            dropdownStyle={styles.dropdown}
-            style={[styles.dropdown, { marginTop: 10, marginLeft: 10 }]}
-            onSelect={(_index: any, value: React.SetStateAction<string>) =>
-              setFrequency(value)
-            }
-            renderButtonText={renderDropdownButtonText}
-          />
-        </View>
-      </View>
-
-      <Pressable style={styles.button} onPress={() => console.log("Valider")}>
-        <Text style={styles.buttontext}>{"Test"}</Text>
-      </Pressable>
-
-      {spendings.map((item, index) => {
-        const category = getCategoryById(item.category_id);
-        return (
-          <View
-            key={index}
-            style={[
-              styles.spendingItem,
-              { backgroundColor: itemBackgroundColor },
-            ]}
-          >
-            <View style={styles.textContainer}>
-              <View style={styles.nameAndPriceContainer}>
-                <Text style={[styles.spendingText, { color: labelColor }]}>
-                  {item.name}
-                </Text>
-                <Text style={styles.spendingValue}>- {item.value} €</Text>
-              </View>
-              <View style={styles.dateAndCategoryContainer}>
-                <Text style={[styles.spendingDate, { color: labelColor }]}>
-                  {new Date(item.createdat).toLocaleDateString()}
-                </Text>
-                {category && (
+      <Button
+        style={styles.button}
+        size="xs"
+        variant="solid"
+        action="primary"
+        isDisabled={false}
+        isFocusVisible={false}
+        onPress={() => setModalVisible(true)}
+      >
+        <ButtonText>New</ButtonText>
+        <ButtonIcon as={AddIcon} />
+      </Button>
+      {categories.map((category) => (
+        <View key={category.id}>
+          {category.spendings.map((spending) => (
+            <View
+              key={spending.id}
+              style={[
+                styles.spendingItem,
+                { backgroundColor: itemBackgroundColor },
+              ]}
+            >
+              <View style={{ flex: 1 }}>
+                <View style={styles.nameAndPriceContainer}>
+                  <Text style={[styles.spendingText, { color: labelColor }]}>
+                    {spending.name}
+                  </Text>
+                  <Text style={styles.spendingValue}>
+                    - {spending.amount} €
+                  </Text>
+                </View>
+                <View style={styles.dateAndCategoryContainer}>
+                  <Text style={[styles.spendingDate, { color: labelColor }]}>
+                    {new Date(spending.date).toLocaleDateString()}
+                  </Text>
                   <View
                     style={[
                       styles.categoryBadge,
@@ -139,12 +109,35 @@ export default function SpendingsList({
                   >
                     <Text style={styles.categoryText}>{category.name}</Text>
                   </View>
-                )}
+                </View>
               </View>
             </View>
+          ))}
+        </View>
+      ))}
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <InputsForm onListExpand={undefined} isListExpanded={undefined} />
+            <View style={styles.modalButtonContainer}>
+              <Button
+                onPress={() => setModalVisible(!modalVisible)}
+                style={styles.buttonClose}
+              >
+                <ButtonText>Fermer</ButtonText>
+              </Button>
+            </View>
           </View>
-        );
-      })}
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -166,12 +159,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
     borderTopEndRadius: 20,
-    borderEndEndRadius: 20,
-    borderStartStartRadius: 20,
     borderBottomLeftRadius: 20,
-  },
-  textContainer: {
-    flex: 1,
   },
   nameAndPriceContainer: {
     flexDirection: "row",
@@ -197,16 +185,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  inputContainer: {
-    padding: 10,
-  },
-  input: {
-    borderBottomWidth: 1,
-    marginBottom: 10,
-    padding: 8,
-    borderColor: "#ccc",
-    fontSize: 12,
-  },
   categoryBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -217,32 +195,52 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
   },
-  inlineContainer: {
-    flexDirection: "row",
+  button: {
+    width: 60,
+  },
+  centeredView: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginTop: 22,
   },
-  dropdownContainer: {
+  modalView: {
+    margin: 20,
+    width: 300,
+    backgroundColor: "white",
+    height: 600,
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalButtonContainer: {
     flexDirection: "row",
-    flex: 1,
+    justifyContent: "space-between",
+    width: "50%",
+    marginTop: 0,
   },
-  dropdown: {
-    backgroundColor: "#1e1e1e",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  buttonClose: {
+    backgroundColor: "#2196F3",
+    padding: 10,
+    borderRadius: 20,
+    width: 100,
+    alignItems: "center",
   },
-  button: {
-    backgroundColor: "#4CAF50",
-    borderRadius: 30,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  buttontext: {
+  textStyle: {
     color: "white",
-    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  categoryTitle: {
+    fontSize: 20,
+    marginVertical: 10,
   },
 });

@@ -1,54 +1,59 @@
-import React from "react";
-import { StyleSheet, View, useColorScheme, Text } from "react-native";
+// MyChart.js
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, useColorScheme } from "react-native";
 import { VictoryPie, VictoryLabel } from "victory-native";
-import categories from "@/categories.json";
-import spendings from "@/spendings.json";
-import user from "@/users.json";
+import { Text } from "@gluestack-ui/themed";
+import { fetchCategories } from "@/app/callsAPI";
 
 export default function MyChart() {
   const colorScheme = useColorScheme();
   const labelColor = colorScheme === "dark" ? "white" : "black";
   const backgroundColor = colorScheme === "dark" ? "black" : "white";
-  const userIndex = 0;
-  const revenus = user[userIndex].revenus;
+  const [categories, setCategories] = useState([]);
 
-  // Convert budget from string to number if necessary
-  const parsedCategories = categories.map((category) => ({
-    ...category,
-    budget:
-      typeof category.budget === "string"
-        ? parseFloat(category.budget)
-        : category.budget,
-  }));
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des catégories:", error);
+      }
+    };
 
-  // Calculate total expenses (revenus - total spendings)
-  const totalSpendings = spendings.reduce(
-    (acc, spending) => acc + parseFloat(spending.value),
-    0
-  );
+    fetchData();
+  }, []);
 
-  const remainingAmount = Number(revenus) - totalSpendings;
-
-  const pieData = parsedCategories.map((category) => ({
+  // Utiliser totalSpending de chaque catégorie pour les valeurs
+  const pieData = categories.map((category) => ({
     x: category.name,
-    y: category.budget,
-    label: `${((category.budget / Number(revenus)) * 100).toFixed(1)}%`,
+    y: category.totalSpending,
   }));
+
+  const total = pieData.reduce((sum, category) => sum + category.y, 0);
+
+  const pieDataWithPercentages = pieData.map((item) => ({
+    ...item,
+    percentage: ((item.y / total) * 100).toFixed(2),
+  }));
+
+  const colorScale = [
+    "#556B2F",
+    "#2C3E50",
+    "#6A5ACD",
+    "#8B5F65",
+    "#708090",
+    "#556B2F",
+    "#6B4423",
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: backgroundColor }]}>
       <VictoryPie
         innerRadius={100}
-        data={pieData}
-        colorScale={[
-          "#556B2F",
-          "#2C3E50",
-          "#6A5ACD",
-          "#8B5F65",
-          "#708090",
-          "#556B2F",
-          "#6B4423",
-        ]}
+        data={pieDataWithPercentages}
+        colorScale={colorScale}
+        labels={({ datum }) => `${datum.percentage}%`}
         labelComponent={
           <VictoryLabel
             angle={({ datum }) => {
@@ -82,9 +87,21 @@ export default function MyChart() {
           />
         }
       />
-      <Text style={[styles.centerText, { color: labelColor }]}>
-        Restant: {remainingAmount.toFixed(2)} €
-      </Text>
+      <View style={styles.legend}>
+        {pieDataWithPercentages.map((item, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View
+              style={[
+                styles.legendColor,
+                { backgroundColor: colorScale[index % colorScale.length] },
+              ]}
+            />
+            <Text style={[styles.legendText, { color: labelColor }]}>
+              {item.x} - {item.percentage}%
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -94,9 +111,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  centerText: {
-    position: "absolute",
-    textAlign: "center",
-    fontSize: 15,
+  legend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    width: "100%",
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 20,
+    marginBottom: 10,
+  },
+  legendColor: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  legendText: {
+    fontSize: 12,
   },
 });
