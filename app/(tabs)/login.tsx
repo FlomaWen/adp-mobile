@@ -37,7 +37,7 @@ export default function LoginScreen() {
         <>
           <Text>Test</Text>
           <Button onPress={handleSubmit} style={styles.button}>
-            <ButtonText>Se connecter</ButtonText>
+            <ButtonText>Se déconnecter</ButtonText>
           </Button>
         </>
       ) : (

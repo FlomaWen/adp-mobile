@@ -41,18 +41,20 @@ export default function LoginForm() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
         }),
       });
 
-      if (response.status === 204) {
+      if (response.status === 200) {
         const cookies = response.headers.get("Set-Cookie");
         await AsyncStorage.setItem("cookies", cookies || "");
         Alert.alert("Succès", "Connexion réussie !");
       } else {
         Alert.alert("Erreur", "Échec de la connexion");
+        console.error("Échec de la connexion:", response.status);
       }
     } catch (error) {
       Alert.alert("Erreur", "Impossible de se connecter au serveur");

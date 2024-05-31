@@ -1,30 +1,34 @@
-import React from "react";
+// MyChart.js
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, useColorScheme } from "react-native";
 import { VictoryPie, VictoryLabel } from "victory-native";
-import categories from "@/categories.json";
-import spendings from "@/spendings.json";
-import user from "@/users.json";
-import { Box, Text } from "@gluestack-ui/themed";
+import { Text } from "@gluestack-ui/themed";
+import { fetchCategories } from "@/app/callsAPI";
 
 export default function MyChart() {
   const colorScheme = useColorScheme();
   const labelColor = colorScheme === "dark" ? "white" : "black";
   const backgroundColor = colorScheme === "dark" ? "black" : "white";
+  const [categories, setCategories] = useState([]);
 
-  const thisUser = 0;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des catégories:", error);
+      }
+    };
 
-  const pieData = categories.map((category) => {
-    const totalSpending = spendings
-      .filter((spending) => spending.category_id === category.ID)
-      .reduce((sum, spending) => sum + parseFloat(spending.value), 0);
-    return { y: totalSpending, x: category.name };
-  });
+    fetchData();
+  }, []);
 
-  const remaining =
-    +user[thisUser].revenus -
-    pieData.reduce((sum, category) => sum + category.y, 0);
-
-  pieData.push({ y: remaining, x: "Restant" });
+  // Utiliser totalSpending de chaque catégorie pour les valeurs
+  const pieData = categories.map((category) => ({
+    x: category.name,
+    y: category.totalSpending,
+  }));
 
   const total = pieData.reduce((sum, category) => sum + category.y, 0);
 
@@ -34,13 +38,13 @@ export default function MyChart() {
   }));
 
   const colorScale = [
-    "#FCFFA6",
-    "#C1FFD7",
-    "#B5DEFF",
-    "#CAB8FF",
-    "#79B4B7",
-    "#9D9D9D",
-    "#C1AC95",
+    "#556B2F",
+    "#2C3E50",
+    "#6A5ACD",
+    "#8B5F65",
+    "#708090",
+    "#556B2F",
+    "#6B4423",
   ];
 
   return (
@@ -83,9 +87,6 @@ export default function MyChart() {
           />
         }
       />
-      <Text style={[styles.centerText, { color: labelColor }]}>
-        Restant: {remaining.toFixed(2)} €
-      </Text>
       <View style={styles.legend}>
         {pieDataWithPercentages.map((item, index) => (
           <View key={index} style={styles.legendItem}>
@@ -110,15 +111,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  centerText: {
-    position: "absolute",
-    textAlign: "center",
-    fontSize: 15,
-  },
   legend: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
     width: "100%",
@@ -126,9 +122,8 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 10,
-    width: "30%",
-    paddingLeft: 30,
+    marginRight: 20,
+    marginBottom: 10,
   },
   legendColor: {
     width: 10,
